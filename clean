@@ -1,0 +1,13 @@
+rm -rf .DS_Store
+rm -rf PDFResults/*
+rm -rf PDFResults/.DS_Store
+cp README.md PDFResults/
+make clean
+rm -rf foo foo2 bar bar2 out.pdf out2.pdf
+rm -rf *.ps *.zlib
+rm -rf out.json
+rm -rf temp.pdf decomp.pdf
+rm -rf oldfoo newfoo
+rm -rf PDFTests/foo
+cd regression; ./clean
+rm -rf ../regression/foo.diff

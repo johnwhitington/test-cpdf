@@ -1,0 +1,5 @@
+cd ..
+./clean
+make
+cd regression
+make
