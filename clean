@@ -1,4 +1,6 @@
 rm -rf .DS_Store
+rm -rf PDFTests/*
+cp ./hello.pdf PDFTests/
 rm -rf PDFResults/*
 rm -rf PDFResults/.DS_Store
 cp README.md PDFResults/
