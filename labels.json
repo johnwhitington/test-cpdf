@@ -1,0 +1,14 @@
+[
+  {
+    "labelstyle": "LowercaseRoman",
+    "labelprefix": null,
+    "startpage": 1,
+    "startvalue": 1
+  },
+  {
+    "labelstyle": "DecimalArabic",
+    "labelprefix": null,
+    "startpage": 19,
+    "startvalue": 1
+  }
+]

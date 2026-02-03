@@ -155,9 +155,9 @@ let tests =
    "-stamp-under-fast",
     ("-stamp-under hello.pdf -fast -scale-stamp-to-fit", "");
    "-combine-pages",
-    ("-combine-pages PDFTests/Gosta.PDF", "");
+    ("-combine-pages logo.pdf", "");
    "-combine-pages-fast",
-    ("-combine-pages PDFTests/Gosta.PDF -fast", "");
+    ("-combine-pages logo.pdf -fast", "");
    "-add-text",
     ("-add-text \"%Bookmark1 UTF8: è - bates %Bates, %URL[coherentpdf|https://www.coherentpdf.com/] %Label of %EndPage %Roman %roman %a %A %b %B %d\
 %e %H %I %j %m %M %p %S %T %u %w %Y %%  -\" -bates 10 \
