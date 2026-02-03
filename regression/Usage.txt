@@ -1,0 +1,13 @@
+Run `make` to make. Main tester must already have been built.
+
+Single command to compare installed cpdf2.8 with installed cpdf for one file:
+
+./reset; ./cpdfr cpdf2.8 -info 1
+
+Compare all instead:
+
+./reset; ./cpdfr cpdf2.8 '' 1
+
+Change number as appropriate.
+
+The results will be in foo.diff.
