@@ -282,6 +282,7 @@ let tests =
    "-output-json-parse", ("-output-json -output-json-parse-content-streams", "");
    (* Chapter 16. Optional Content Groups *)
    "-ocg-list", ("-ocg-list", "");
+   "-ocg-list-json", ("-ocg-list-json", "");
    (* Chapter 17. Creating new PDFs *)
    "-png", ("-subformat PDF/UA-1 -title foo -png images/png.png", "");
    "-jpeg", ("-jpeg images/jpg.jpg", "");
