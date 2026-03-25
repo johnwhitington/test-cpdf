@@ -1,6 +1,11 @@
 (* FIXME: Add a test for -output-image - will need to be custom. *)
 (* FIXME: Add test for -extract-all-metadata - will need to be custom. *)
 (* FIXME: Add test for -extract-single-image - custom? *)
+(* FIXME: Add test for -ocg-replace - custom *)
+(* FIXME: Add test for -sig-info - ordinary. *)
+(* FIXME: Add test for -relative-to-bleed etc. Ordinary *)
+(* FIXME: Add test for -attach-file-json *)
+(* FIXME: Add test for -add-page-labels-json *)
 (* A very simple tester for cpdf. *)
 open Pdfutil
 
