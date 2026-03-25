@@ -1,13 +1,11 @@
-(* FIXME: Add a test for -output-image - will need to be custom. *)
-(* FIXME: Add test for -extract-all-metadata - will need to be custom. *)
 (* FIXME: Add test for -extract-single-image - custom? *)
 (* FIXME: Add test for -ocg-replace - custom *)
-(* FIXME: Add test for -sig-info - ordinary. *)
-(* FIXME: Add test for -relative-to-bleed etc. Ordinary *)
-(* FIXME: Add test for -attach-file-json *)
-(* FIXME: Add test for -add-page-labels-json *)
 (* A very simple tester for cpdf. *)
 open Pdfutil
+
+(* TODO More terse, searchable output.
+   TODO Way to mark tests which are expected to fail, or distinguish different types of failure
+   TODO Some of the custom tests have duplicate code. De-duplicate as far as possible. *)
 
 let loud = true
 
@@ -170,6 +168,9 @@ let tests =
    "-add-text-multiline",
     ("-add-text \"This is\\nmultline\\ntext\" -justify-right -topline -center \
     -underneath -line-spacing 10 -relative-to-cropbox -decrypt-force", "");
+   "-add-text-trim",
+    ("-add-text \"This is\\nmultline\\ntext\" -justify-right -topline -center \
+    -underneath -line-spacing 10 -relative-to-trimbox -decrypt-force", "");
     ("-add-text-ttf",
     ("-load-ttf 'A=./fonts/NotoSans-Black.ttf' -font A -add-text foo ", ""));
     ("-embed-std14",
@@ -208,6 +209,8 @@ let tests =
     ("-info -gs gs -gs-malformed ", "-raw");
    "-info-json",
     ("-info-json -mm", "-raw");
+   "-sig-info",
+    ("-sig-info", "");
    "-set-title-also",
     ("-set-title frøgs -also-set-xmp", "");
    "-set-title-just",
@@ -371,7 +374,6 @@ let tests =
    "-revisionmax", ("", "-revision 20000");
    "-attach-files-json", ("-attach-files-json attachhello.json", "");
    "-add-page-labels-json", ("-add-page-labels-json labels.json", "");
-   (*"-output-image", ("-output-image -gs-quiet -gs gs -rasterize-jpeg -rasterize-res 72", "");*)
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    ]
@@ -498,21 +500,41 @@ let test_split_bookmarks todo =
       let files = if todo < max_int then take files todo else files in
       List.iter (fun (filename, f) -> test_split_bookmarks_inner filename) files
 
-let test_pdftest todo =
+let test_extract_all_metadata_inner todo =
+  begin try Unix.mkdir (!destination ^ "/" ^ todo ^ ".extractallmetadata") 0o777 with _ -> () end;
+  let line =
+    !exec ^ " -extract-all-metadata " ^ "\"" ^ !source ^ "/" ^ todo ^ "\"" ^ " -o " ^
+    "\"" ^ !destination ^ "/" ^ todo ^ ".extractallmetadata" ^ "\""
+  in
+    print_string (line ^ "\n");
+    flush stderr;
+    ignore (Sys.command line)
+
+let test_extract_all_metadata todo =
   let files = dir_listing !source in
     let files =
-      map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
+      map (fun f -> f, f) (keep ispdf files)
     in
       let files = if todo < max_int then take files todo else files in
-        iter
-          (function (filename, f) ->
-             let line =
-               "./rendertest " ^ filename ^ " \"" ^ !destination ^ "/" ^ f ^ "\""
-             in
-               print_string (line ^ "\n");
-               flush stderr;
-               ignore (Sys.command line))
-          files
+      List.iter (fun (filename, f) -> test_extract_all_metadata_inner filename) files
+
+let test_output_image todo =
+  begin try Unix.mkdir (!destination ^ "/" ^ todo ^ ".outputimage") 0o777 with _ -> () end;
+  let line =
+    !exec ^ " -output-image " ^ "\"" ^ !source ^ "/" ^ todo ^ "\"" ^ " 1 -o " ^
+    "\"" ^ !destination ^ "/" ^ todo ^ ".outputimage%%%.png" ^ "\""
+  in
+    print_string (line ^ "\n");
+    flush stderr;
+    ignore (Sys.command line)
+
+let test_output_image todo =
+  let files = dir_listing !source in
+    let files =
+      map (fun f -> f, f) (keep ispdf files)
+    in
+      let files = if todo < max_int then take files todo else files in
+      List.iter (fun (filename, f) -> test_output_image filename) files
 
 let command c =
   print_endline c;
@@ -664,6 +686,8 @@ let go src dest testname number =
     | "-roundtrip-annotations" -> test_roundtrip_annotations todo
     | "-roundtrip-struct-tree" -> test_roundtrip_struct_tree todo
     | "-update" -> test_update todo
+    | "-extract-all-metadata" -> test_extract_all_metadata todo
+    | "-output-image" -> test_output_image todo
     | _ ->
       match lookup testname tests with
       | Some t -> testit t todo
