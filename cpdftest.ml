@@ -1,11 +1,7 @@
-(* FIXME: Add test for -extract-single-image - custom? *)
 (* FIXME: Add test for -ocg-replace - custom *)
+(* FIXME: Some of the custom tests have duplicate code. De-duplicate as far as possible. *)
 (* A very simple tester for cpdf. *)
 open Pdfutil
-
-(* TODO More terse, searchable output.
-   TODO Way to mark tests which are expected to fail, or distinguish different types of failure
-   TODO Some of the custom tests have duplicate code. De-duplicate as far as possible. *)
 
 let loud = true
 
@@ -263,6 +259,7 @@ let tests =
    "-extract-images-inline", ("-extract-images -inline -dedup-perpage", "");
    "-extract-images-raw", ("-extract-images -raw", "");
    "-extract-images-p2p", ("-extract-images -dedup", "");
+   "-extract-single-image", ("-extract-single-image 1", "");
    "-list-images", ("-list-images", "");
    "-list-images-inline", ("-list-images -inline", "");
    "-list-images-json", ("-list-images-json", "");
@@ -463,6 +460,14 @@ let self_merge todo =
                ignore (Sys.command line))
           fs fs2
 
+let prepare_custom fn todo =
+  let files = dir_listing !source in
+    let files =
+      map (fun f -> f, f) (keep ispdf files)
+    in
+      let files = if todo < max_int then take files todo else files in
+      List.iter (fun (filename, f) -> fn filename) files
+
 (* Here, todo is the name of the file to test splitting. *)
 let test_split_inner todo =
   begin try Unix.mkdir (!destination ^ "/" ^ todo ^ ".split") 0o777 with _ -> () end;
@@ -474,13 +479,8 @@ let test_split_inner todo =
     flush stderr;
     ignore (Sys.command line)
 
-let test_split todo =
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> f, f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-      List.iter (fun (filename, f) -> test_split_inner filename) files
+let test_split =
+  prepare_custom test_split_inner
 
 let test_split_bookmarks_inner todo =
   begin try Unix.mkdir (!destination ^ "/" ^ todo ^ ".splitbookmarks") 0o777 with _ -> () end;
@@ -492,13 +492,8 @@ let test_split_bookmarks_inner todo =
     flush stderr;
     ignore (Sys.command line)
 
-let test_split_bookmarks todo =
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> f, f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-      List.iter (fun (filename, f) -> test_split_bookmarks_inner filename) files
+let test_split_bookmarks =
+  prepare_custom test_split_bookmarks_inner
 
 let test_extract_all_metadata_inner todo =
   begin try Unix.mkdir (!destination ^ "/" ^ todo ^ ".extractallmetadata") 0o777 with _ -> () end;
@@ -510,15 +505,9 @@ let test_extract_all_metadata_inner todo =
     flush stderr;
     ignore (Sys.command line)
 
-let test_extract_all_metadata todo =
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> f, f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-      List.iter (fun (filename, f) -> test_extract_all_metadata_inner filename) files
+let test_extract_all_metadata = prepare_custom test_extract_all_metadata_inner
 
-let test_output_image todo =
+let test_output_image_inner todo =
   begin try Unix.mkdir (!destination ^ "/" ^ todo ^ ".outputimage") 0o777 with _ -> () end;
   let line =
     !exec ^ " -output-image " ^ "\"" ^ !source ^ "/" ^ todo ^ "\"" ^ " 1 -o " ^
@@ -528,41 +517,39 @@ let test_output_image todo =
     flush stderr;
     ignore (Sys.command line)
 
-let test_output_image todo =
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> f, f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-      List.iter (fun (filename, f) -> test_output_image filename) files
+let test_output_image =
+  prepare_custom test_output_image_inner
 
 let command c =
   print_endline c;
   Sys.command c
 
-let test_roundtrip_bookmarks json todo =
-  let add = if json then " -add-bookmarks-json " else " -add-bookmarks " in
-  let lst = if json then " -list-bookmarks-json -preserve-actions " else " -list-bookmarks " in
+let get_files todo =
   let files = dir_listing !source in
     let files =
       map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
     in
-      let files = if todo < max_int then take files todo else files in
-        iter
-          (function (filename, f) ->
-             Printf.printf "Processing file %s\n" filename;
-             Printf.printf "========================================================================\n";
-             flush stdout;
-             (* List its bookmarks to file. *)
-             ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ filename ^ " >bar"));
-             (* Add those bookmarks back, copying to new pdf *)
-             ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed -recrypt " ^ add ^ "bar " ^ filename ^ " -o out.pdf"));
-             ignore (Sys.command ("cp out.pdf PDFResults/roundtripbookmarksjson/" ^ f));
-             (* List the new bookmarks to a file *)
-             ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ " out.pdf >bar2"));
-             (* Call diff on the two files *)
-             ignore (Sys.command ("diff -u bar bar2")))
-          files
+      if todo < max_int then take files todo else files
+
+let test_roundtrip_bookmarks json todo =
+  let add = if json then " -add-bookmarks-json " else " -add-bookmarks " in
+  let lst = if json then " -list-bookmarks-json -preserve-actions " else " -list-bookmarks " in
+  let files = get_files todo in
+    iter
+      (function (filename, f) ->
+         Printf.printf "Processing file %s\n" filename;
+         Printf.printf "========================================================================\n";
+         flush stdout;
+         (* List its bookmarks to file. *)
+         ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ filename ^ " >bar"));
+         (* Add those bookmarks back, copying to new pdf *)
+         ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed -recrypt " ^ add ^ "bar " ^ filename ^ " -o out.pdf"));
+         ignore (Sys.command ("cp out.pdf PDFResults/roundtripbookmarksjson/" ^ f));
+         (* List the new bookmarks to a file *)
+         ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ " out.pdf >bar2"));
+         (* Call diff on the two files *)
+         ignore (Sys.command ("diff -u bar bar2")))
+      files
 
 (* Use the results from the jsonroundtripjson directory, and convert them to PDFs
    and write to the jsonroundtrip directory, then do it again to the second directory. *)
@@ -571,96 +558,80 @@ let test_roundtrip_json parse_content utf8 todo =
   begin try Unix.mkdir ("PDFResults" ^ "/" ^ "jsonroundtrip") 0o777 with _ -> () end;
   begin try Unix.mkdir ("PDFResults" ^ "/" ^ "jsonroundtripjson") 0o777 with _ -> () end;
   begin try Unix.mkdir ("PDFResults" ^ "/" ^ "second") 0o777 with _ -> () end;
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-        iter
-          (function (filename, f) ->
-             Printf.printf "JSON Round trip: processing file %s\n" filename;
-             Printf.printf "========================================================================\n";
-             flush stdout;
-             (* Output the JSON. *)
-             let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/jsonroundtripjson" ^ "/" ^ f ^ ".json\" " ^ filename ^ (if parse_content then " -output-json-parse-content-streams" else "")
-             in
-             Printf.printf "cmd: %s\n" cmd;
-             ignore (Sys.command cmd);
-             (* Read back in to a PDF *)
-             Printf.printf "(Reading back in...)\n%!";
-             let cmd =
-               !exec ^ " -j \"PDFResults/jsonroundtripjson/" ^ f ^ ".json\" -o \"PDFResults/jsonroundtrip/" ^ f ^ "\""
-             in
-             Printf.printf "cmd: %s\n" cmd;
-             ignore (Sys.command cmd);
-             (* Output again... *)
-             Printf.printf "(Second try...)\n%!";
-             let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/second" ^ "/" ^ f ^ ".json\" " ^ "PDFResults/jsonroundtrip/" ^ f ^ (if parse_content then " -output-json-parse-content-streams" else "")
-             in
-             Printf.printf "cmd: %s\n" cmd;
-             ignore (Sys.command cmd);
-           )
-          files
+  let files = get_files todo in
+    iter
+      (function (filename, f) ->
+         Printf.printf "JSON Round trip: processing file %s\n" filename;
+         Printf.printf "========================================================================\n";
+         flush stdout;
+         (* Output the JSON. *)
+         let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/jsonroundtripjson" ^ "/" ^ f ^ ".json\" " ^ filename ^ (if parse_content then " -output-json-parse-content-streams" else "")
+         in
+         Printf.printf "cmd: %s\n" cmd;
+         ignore (Sys.command cmd);
+         (* Read back in to a PDF *)
+         Printf.printf "(Reading back in...)\n%!";
+         let cmd =
+           !exec ^ " -j \"PDFResults/jsonroundtripjson/" ^ f ^ ".json\" -o \"PDFResults/jsonroundtrip/" ^ f ^ "\""
+         in
+         Printf.printf "cmd: %s\n" cmd;
+         ignore (Sys.command cmd);
+         (* Output again... *)
+         Printf.printf "(Second try...)\n%!";
+         let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/second" ^ "/" ^ f ^ ".json\" " ^ "PDFResults/jsonroundtrip/" ^ f ^ (if parse_content then " -output-json-parse-content-streams" else "")
+         in
+         Printf.printf "cmd: %s\n" cmd;
+         ignore (Sys.command cmd);
+       )
+      files
 
 let test_roundtrip_annotations todo =
   begin try Unix.mkdir ("PDFResults" ^ "/" ^ "removedannotations") 0o777 with _ -> () end;
   begin try Unix.mkdir ("PDFResults" ^ "/" ^ "addedannotations") 0o777 with _ -> () end;
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-        iter
-          (function (filename, f) ->
-             Printf.printf "Processing file %s\n" filename;
-             Printf.printf "========================================================================\n";
-             flush stdout;
-             (* Save annotations to bar *)
-             ignore (Sys.command (!exec ^ " -list-annotations-json PDFTests/" ^ f ^ " >bar"));
-             (* Remove annotations, writing to results *)
-             ignore (Sys.command (!exec ^ " -remove-annotations PDFTests/" ^ f ^ " -o PDFResults/removedannotations/" ^ f));
-             (* Set the annotations from the JSON *)
-             ignore (Sys.command (!exec ^ " -set-annotations bar PDFResults/removedannotations/" ^ f ^ " -o PDFResults/addedannotations/" ^ f))
-            )
-          files
+  let files = get_files todo in
+    iter
+      (function (filename, f) ->
+         Printf.printf "Processing file %s\n" filename;
+         Printf.printf "========================================================================\n";
+         flush stdout;
+         (* Save annotations to bar *)
+         ignore (Sys.command (!exec ^ " -list-annotations-json PDFTests/" ^ f ^ " >bar"));
+         (* Remove annotations, writing to results *)
+         ignore (Sys.command (!exec ^ " -remove-annotations PDFTests/" ^ f ^ " -o PDFResults/removedannotations/" ^ f));
+         (* Set the annotations from the JSON *)
+         ignore (Sys.command (!exec ^ " -set-annotations bar PDFResults/removedannotations/" ^ f ^ " -o PDFResults/addedannotations/" ^ f))
+        )
+      files
 
 let test_roundtrip_struct_tree todo =
   begin try Unix.mkdir ("PDFResults" ^ "/" ^ "replacedstructtrees") 0o777 with _ -> () end;
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-        iter
-          (function (filename, f) ->
-             Printf.printf "Processing file %s\n" filename;
-             Printf.printf "========================================================================\n";
-             flush stdout;
-             (* Save structure to out.json *)
-             ignore (command (!exec ^ " -extract-struct-tree PDFTests/" ^ f ^ " -o out.json"));
-             (* Set the structure tree from the JSON *)
-             ignore (command (!exec ^ " -recrypt -replace-struct-tree out.json PDFTests/" ^ f ^ " -o PDFResults/replacedstructtrees/" ^ f))
-            )
-          files
+  let files = get_files todo in
+    iter
+      (function (filename, f) ->
+         Printf.printf "Processing file %s\n" filename;
+         Printf.printf "========================================================================\n";
+         flush stdout;
+         (* Save structure to out.json *)
+         ignore (command (!exec ^ " -extract-struct-tree PDFTests/" ^ f ^ " -o out.json"));
+         (* Set the structure tree from the JSON *)
+         ignore (command (!exec ^ " -recrypt -replace-struct-tree out.json PDFTests/" ^ f ^ " -o PDFResults/replacedstructtrees/" ^ f))
+        )
+      files
 
 let test_update todo =
-  let files = dir_listing !source in
-    let files =
-      map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
-    in
-      let files = if todo < max_int then take files todo else files in
-        iter
-          (function (filename, f) ->
-             Printf.printf "Processing file %s\n" filename;
-             Printf.printf "========================================================================\n";
-             flush stdout;
-             (* Copy to output directory *)
-             let a = command ("cp 'PDFTests/" ^ f ^ "' 'PDFResults/update/" ^ f ^ "'") in
-               Printf.printf "cp exit code %i\n" a;
-             (* Update in place in output directory. *)
-             let b = command (!exec ^ " 'PDFResults/update/" ^ f ^ "' -rotate 90 -recrypt -update " ^ " -o " ^ " 'PDFResults/update/" ^ f ^ "'") in
-               Printf.printf "cpdf exit code %i\n" b)
-          files
+  let files = get_files todo in
+    iter
+      (function (filename, f) ->
+         Printf.printf "Processing file %s\n" filename;
+         Printf.printf "========================================================================\n";
+         flush stdout;
+         (* Copy to output directory *)
+         let a = command ("cp 'PDFTests/" ^ f ^ "' 'PDFResults/update/" ^ f ^ "'") in
+           Printf.printf "cp exit code %i\n" a;
+         (* Update in place in output directory. *)
+         let b = command (!exec ^ " 'PDFResults/update/" ^ f ^ "' -rotate 90 -recrypt -update " ^ " -o " ^ " 'PDFResults/update/" ^ f ^ "'") in
+           Printf.printf "cpdf exit code %i\n" b)
+      files
 
 let go src dest testname number =
   source := src;
