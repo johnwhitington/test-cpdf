@@ -209,6 +209,8 @@ let tests =
     ("-info-json -mm", "-raw");
    "-sig-info",
     ("-sig-info", "");
+   "-sig-info-json",
+    ("-sig-info", "-json");
    "-set-title-also",
     ("-set-title frøgs -also-set-xmp", "");
    "-set-title-just",
