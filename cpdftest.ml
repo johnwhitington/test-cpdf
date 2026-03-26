@@ -1,5 +1,3 @@
-(* FIXME: Add test for -ocg-replace - custom *)
-(* FIXME: Some of the custom tests have duplicate code. De-duplicate as far as possible. *)
 (* A very simple tester for cpdf. *)
 open Pdfutil
 
@@ -20,7 +18,7 @@ let test executable range prename postname name =
     executable ^ " " (*^ " -debug-stderr-to-stdout "*) ^ prename ^ " \"" ^ name ^ "\" " ^ range ^ (if String.starts_with ~prefix:"-extract-images" name || String.starts_with ~prefix:"-extract-font" name then "" else " -o " ^ postname)
   in
     if loud then (print_string (strip_name command_line); print_newline ());
-    let f, r = name, Sys.command command_line in
+    let f, r = name, command_and_print command_line in
       if r > 0 && prename = "-squeeze" then
         begin
           Printf.printf "Copying failed file %s to %s\n" name postname;
@@ -441,7 +439,7 @@ let test_merge collate todo =
           let line = !exec ^ collate ^ " -decrypt-force -merge -merge-add-bookmarks -merge-add-bookmarks-use-titles -retain-numbering " ^ filenames ^ " -o " ^ !destination ^ "/merged.pdf" in
             print_string (line ^ "\n");
             flush stderr;
-            ignore (Sys.command line)
+            ignore (command_and_print line)
 
 (* Copy each file to temp, then merge with itself. *)
 let self_merge todo =
@@ -453,11 +451,11 @@ let self_merge todo =
         iter2
           (fun f f2 ->
              let line = "cp " ^ f ^ " temp.pdf" in
-              ignore (Sys.command line);
+              ignore (command_and_print line);
              let line = !exec ^ " -merge -process-struct-trees -decrypt-force temp.pdf " ^ f ^ " -o " ^ "\"" ^ !destination ^ "/" ^ f2 ^ "\"" in
                print_string (line ^ "\n");
                flush stderr;
-               ignore (Sys.command line))
+               ignore (command_and_print line))
           fs fs2
 
 let prepare_custom fn todo =
@@ -477,7 +475,7 @@ let test_split_inner todo =
   in
     print_string (line ^ "\n");
     flush stderr;
-    ignore (Sys.command line)
+    ignore (command_and_print line)
 
 let test_split =
   prepare_custom test_split_inner
@@ -490,7 +488,7 @@ let test_split_bookmarks_inner todo =
   in
     print_string (line ^ "\n");
     flush stderr;
-    ignore (Sys.command line)
+    ignore (command_and_print line)
 
 let test_split_bookmarks =
   prepare_custom test_split_bookmarks_inner
@@ -503,7 +501,7 @@ let test_extract_all_metadata_inner todo =
   in
     print_string (line ^ "\n");
     flush stderr;
-    ignore (Sys.command line)
+    ignore (command_and_print line)
 
 let test_extract_all_metadata = prepare_custom test_extract_all_metadata_inner
 
@@ -515,14 +513,14 @@ let test_output_image_inner todo =
   in
     print_string (line ^ "\n");
     flush stderr;
-    ignore (Sys.command line)
+    ignore (command_and_print line)
 
 let test_output_image =
   prepare_custom test_output_image_inner
 
 let command c =
   print_endline c;
-  Sys.command c
+  command_and_print c
 
 let get_files todo =
   let files = dir_listing !source in
@@ -541,14 +539,14 @@ let test_roundtrip_bookmarks json todo =
          Printf.printf "========================================================================\n";
          flush stdout;
          (* List its bookmarks to file. *)
-         ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ filename ^ " >bar"));
+         ignore (command_and_print (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ filename ^ " >bar"));
          (* Add those bookmarks back, copying to new pdf *)
-         ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed -recrypt " ^ add ^ "bar " ^ filename ^ " -o out.pdf"));
-         ignore (Sys.command ("cp out.pdf PDFResults/roundtripbookmarksjson/" ^ f));
+         ignore (command_and_print (!exec ^ " -utf8 -gs gs -gs-malformed -recrypt " ^ add ^ "bar " ^ filename ^ " -o out.pdf"));
+         ignore (command_and_print ("cp out.pdf PDFResults/roundtripbookmarksjson/" ^ f));
          (* List the new bookmarks to a file *)
-         ignore (Sys.command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ " out.pdf >bar2"));
+         ignore (command_and_print (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ " out.pdf >bar2"));
          (* Call diff on the two files *)
-         ignore (Sys.command ("diff -u bar bar2")))
+         ignore (command_and_print ("diff -u bar bar2")))
       files
 
 (* Use the results from the jsonroundtripjson directory, and convert them to PDFs
@@ -568,20 +566,20 @@ let test_roundtrip_json parse_content utf8 todo =
          let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/jsonroundtripjson" ^ "/" ^ f ^ ".json\" " ^ filename ^ (if parse_content then " -output-json-parse-content-streams" else "")
          in
          Printf.printf "cmd: %s\n" cmd;
-         ignore (Sys.command cmd);
+         ignore (command_and_print cmd);
          (* Read back in to a PDF *)
          Printf.printf "(Reading back in...)\n%!";
          let cmd =
            !exec ^ " -j \"PDFResults/jsonroundtripjson/" ^ f ^ ".json\" -o \"PDFResults/jsonroundtrip/" ^ f ^ "\""
          in
          Printf.printf "cmd: %s\n" cmd;
-         ignore (Sys.command cmd);
+         ignore (command_and_print cmd);
          (* Output again... *)
          Printf.printf "(Second try...)\n%!";
          let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/second" ^ "/" ^ f ^ ".json\" " ^ "PDFResults/jsonroundtrip/" ^ f ^ (if parse_content then " -output-json-parse-content-streams" else "")
          in
          Printf.printf "cmd: %s\n" cmd;
-         ignore (Sys.command cmd);
+         ignore (command_and_print cmd);
        )
       files
 
@@ -595,11 +593,11 @@ let test_roundtrip_annotations todo =
          Printf.printf "========================================================================\n";
          flush stdout;
          (* Save annotations to bar *)
-         ignore (Sys.command (!exec ^ " -list-annotations-json PDFTests/" ^ f ^ " >bar"));
+         ignore (command_and_print (!exec ^ " -list-annotations-json PDFTests/" ^ f ^ " >bar"));
          (* Remove annotations, writing to results *)
-         ignore (Sys.command (!exec ^ " -remove-annotations PDFTests/" ^ f ^ " -o PDFResults/removedannotations/" ^ f));
+         ignore (command_and_print (!exec ^ " -remove-annotations PDFTests/" ^ f ^ " -o PDFResults/removedannotations/" ^ f));
          (* Set the annotations from the JSON *)
-         ignore (Sys.command (!exec ^ " -set-annotations bar PDFResults/removedannotations/" ^ f ^ " -o PDFResults/addedannotations/" ^ f))
+         ignore (command_and_print (!exec ^ " -set-annotations bar PDFResults/removedannotations/" ^ f ^ " -o PDFResults/addedannotations/" ^ f))
         )
       files
 
@@ -633,6 +631,9 @@ let test_update todo =
            Printf.printf "cpdf exit code %i\n" b)
       files
 
+let test_roundtrip_ocg_replace todo =
+  ()
+
 let go src dest testname number =
   source := src;
   destination := dest;
@@ -659,6 +660,7 @@ let go src dest testname number =
     | "-update" -> test_update todo
     | "-extract-all-metadata" -> test_extract_all_metadata todo
     | "-output-image" -> test_output_image todo
+    | "-ocg-replace" -> test_roundtrip_ocg_replace todo
     | _ ->
       match lookup testname tests with
       | Some t -> testit t todo
