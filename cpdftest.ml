@@ -409,7 +409,6 @@ let testit (s, range) todo =
             test !exec range s (out leaf) file)
           files
       in
-        (*if loud then*)
           begin
             Printf.printf "\n\nResults:\n";
             print_string line;
@@ -632,16 +631,16 @@ let test_update todo =
       files
 
 let test_roundtrip_ocg_replace todo =
-  begin try Unix.mkdir ("PDFResults" ^ "/" ^ "replacedocg") 0o777 with _ -> () end;
+  begin try Unix.mkdir ("PDFResults" ^ "/" ^ "replaceocg") 0o777 with _ -> () end;
   iter
     (function (filename, f) ->
        Printf.printf "Processing file %s\n" filename;
        Printf.printf "========================================================================\n";
        flush stdout;
        (* Extract the ocg JSON to filename.json *)
-       ignore (command "");
+       ignore (command (!exec ^ " -ocg-list-json 'PDFTests/" ^ f ^ "' > 'PDFResults/replaceocg/" ^ f ^ ".json'"));
        (* Run replace and output to filename.json.pdf *)
-       ignore (command ""))
+       ignore (command (!exec ^ " -ocg-replace 'PDFResults/replaceocg/" ^ f ^ ".json'" ^ " 'PDFTests/" ^ f ^ "' -o 'PDFResults/replaceocg/" ^ f ^ ".json.pdf'")))
     (get_files todo)
 
 let go src dest testname number =
