@@ -375,6 +375,7 @@ let tests =
    "-revisionmax", ("", "-revision 20000");
    "-attach-files-json", ("-attach-files-json attachhello.json", "");
    "-add-page-labels-json", ("-add-page-labels-json labels.json", "");
+   "-show-bboxes", ("", "-show-bboxes");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    ]
