@@ -376,6 +376,7 @@ let tests =
    "-attach-files-json", ("-attach-files-json attachhello.json", "");
    "-add-page-labels-json", ("-add-page-labels-json labels.json", "");
    "-show-bboxes", ("", "-show-bboxes");
+   "-show-bboxes-shape", ("", "-show-bboxes-shape '100 100 200 300'");
    "-reveal-text", ("", "-reveal-text");
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    (* Specials, for internal testing *)
