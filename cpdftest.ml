@@ -162,7 +162,7 @@ let tests =
    "-add-text",
     ("-add-text \"%Bookmark1 UTF8: è - bates %Bates, %URL[coherentpdf|https://www.coherentpdf.com/] %Label of %EndPage %Roman %roman %a %A %b %B %d\
 %e %H %I %j %m %M %p %S %T %u %w %Y %%  -\" -bates 10 \
--bates-pad-to 3 -font Times-Bold -topleft \"10 20\" -prerotate -progress", " -bates-at-range 1 ");
+-bates-pad-to 3 -font Times-Bold -topleft \"10 20\" -prerotate ", " -bates-at-range 1 ");
    "-add-text-multiline",
     ("-add-text \"This is\\nmultline\\ntext\" -justify-right -topline -center \
     -underneath -line-spacing 10 -relative-to-cropbox -decrypt-force", "");
@@ -381,6 +381,7 @@ let tests =
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
+   "-page-content", ("-page-content", "1");
    ]
 
 let recrypt_allowed = function
