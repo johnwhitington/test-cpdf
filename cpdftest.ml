@@ -379,6 +379,7 @@ let tests =
    "-show-bboxes-shape", ("", "-show-bboxes-shape '100 100 200 300'");
    "-reveal-text", ("", "-reveal-text");
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
+   "-test-extract-text", ("", "-test-extract-text");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
