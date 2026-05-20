@@ -380,6 +380,7 @@ let tests =
    "-reveal-text", ("", "-reveal-text");
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    "-test-extract-text", ("", "-test-extract-text");
+   "-remove-stream-content", ("", "-remove-stream-content");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
