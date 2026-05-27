@@ -380,7 +380,7 @@ let tests =
    "-reveal-text", ("", "-reveal-text");
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    "-test-extract-text", ("", "-test-extract-text");
-   "-remove-stream-content", ("", "-remove-stream-content");
+   "-remove-stream-content", ("", "-remove-stream-content -no-preserve-objstm");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
@@ -533,7 +533,7 @@ let test_output_image =
 let get_files todo =
   let files = dir_listing !source in
     let files =
-      map (fun f -> "\"" ^ (!source ^ "/") ^ f ^ "\"", f) (keep ispdf files)
+      map (fun f -> !source ^ "/" ^ f, f) (keep ispdf files)
     in
       if todo < max_int then take files todo else files
 
@@ -547,10 +547,10 @@ let test_roundtrip_bookmarks json todo =
          Printf.printf "========================================================================\n";
          flush stdout;
          (* List its bookmarks to file. *)
-         ignore (command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ filename ^ " >bar"));
+         ignore (command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ Filename.quote filename ^ " >bar"));
          (* Add those bookmarks back, copying to new pdf *)
-         ignore (command (!exec ^ " -utf8 -gs gs -gs-malformed -recrypt " ^ add ^ "bar " ^ filename ^ " -o out.pdf"));
-         ignore (command ("cp out.pdf PDFResults/roundtripbookmarksjson/" ^ f));
+         ignore (command (!exec ^ " -utf8 -gs gs -gs-malformed -recrypt " ^ add ^ "bar " ^ Filename.quote filename ^ " -o out.pdf"));
+         ignore (command ("cp out.pdf " ^ Filename.quote ("PDFResults/roundtripbookmarksjson/" ^ f)));
          (* List the new bookmarks to a file *)
          ignore (command (!exec ^ " -utf8 -gs gs -gs-malformed " ^ lst ^ " out.pdf >bar2"));
          (* Call diff on the two files *)
@@ -571,7 +571,7 @@ let test_roundtrip_json parse_content utf8 todo =
          Printf.printf "========================================================================\n";
          flush stdout;
          (* Output the JSON. *)
-         let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/jsonroundtripjson" ^ "/" ^ f ^ ".json\" " ^ filename ^ (if parse_content then " -output-json-parse-content-streams" else "")
+         let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/jsonroundtripjson" ^ "/" ^ f ^ ".json\" " ^ Filename.quote filename ^ (if parse_content then " -output-json-parse-content-streams" else "")
          in
          Printf.printf "cmd: %s\n" cmd;
          ignore (command cmd);
@@ -584,7 +584,7 @@ let test_roundtrip_json parse_content utf8 todo =
          ignore (command cmd);
          (* Output again... *)
          Printf.printf "(Second try...)\n%!";
-         let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/second" ^ "/" ^ f ^ ".json\" " ^ "PDFResults/jsonroundtrip/" ^ f ^ (if parse_content then " -output-json-parse-content-streams" else "")
+         let cmd = !exec ^ " " ^ (if utf8 then "-utf8" else "") ^ " -output-json -o \"PDFResults/second" ^ "/" ^ f ^ ".json\" " ^ (Filename.quote ("PDFResults/jsonroundtrip/" ^ f)) ^ (if parse_content then " -output-json-parse-content-streams" else "")
          in
          Printf.printf "cmd: %s\n" cmd;
          ignore (command cmd);
@@ -601,11 +601,11 @@ let test_roundtrip_annotations todo =
          Printf.printf "========================================================================\n";
          flush stdout;
          (* Save annotations to bar *)
-         ignore (command (!exec ^ " -list-annotations-json PDFTests/" ^ f ^ " >bar"));
+         ignore (command (!exec ^ " -list-annotations-json 'PDFTests/" ^ f ^ "' >bar"));
          (* Remove annotations, writing to results *)
-         ignore (command (!exec ^ " -remove-annotations PDFTests/" ^ f ^ " -o PDFResults/removedannotations/" ^ f));
+         ignore (command (!exec ^ " -remove-annotations 'PDFTests/" ^ f ^ "' -o 'PDFResults/removedannotations/" ^ f ^ "'"));
          (* Set the annotations from the JSON *)
-         ignore (command (!exec ^ " -set-annotations bar PDFResults/removedannotations/" ^ f ^ " -o PDFResults/addedannotations/" ^ f))
+         ignore (command (!exec ^ " -set-annotations bar 'PDFResults/removedannotations/" ^ f ^ "' -o 'PDFResults/addedannotations/" ^ f ^ "'"))
         )
       files
 
@@ -618,9 +618,9 @@ let test_roundtrip_struct_tree todo =
          Printf.printf "========================================================================\n";
          flush stdout;
          (* Save structure to out.json *)
-         ignore (command (!exec ^ " -extract-struct-tree PDFTests/" ^ f ^ " -o out.json"));
+         ignore (command (!exec ^ " -extract-struct-tree 'PDFTests/" ^ f ^ "' -o out.json"));
          (* Set the structure tree from the JSON *)
-         ignore (command (!exec ^ " -recrypt -replace-struct-tree out.json PDFTests/" ^ f ^ " -o PDFResults/replacedstructtrees/" ^ f))
+         ignore (command (!exec ^ " -recrypt -replace-struct-tree out.json 'PDFTests/" ^ f ^ "' -o 'PDFResults/replacedstructtrees/" ^ f ^ "'"))
         )
       files
 
