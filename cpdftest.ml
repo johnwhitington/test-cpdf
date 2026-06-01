@@ -381,6 +381,7 @@ let tests =
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    "-test-extract-text", ("", "-test-extract-text");
    "-remove-stream-content", ("", "-remove-stream-content -no-preserve-objstm");
+   "-redact-shape", ("", "-redact-shape '100 100 200 300' -recrypt -decrypt-force");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
