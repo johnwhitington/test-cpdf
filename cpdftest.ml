@@ -1,4 +1,4 @@
-(* A very simple tester for cpdf. *)
+e* A very simple tester for cpdf. *)
 open Pdfutil
 
 let loud = true
@@ -381,7 +381,8 @@ let tests =
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    "-test-extract-text", ("", "-test-extract-text");
    "-remove-stream-content", ("", "-remove-stream-content -no-preserve-objstm");
-   "-redact-shape", ("", "-redact-shape '100 100 200 300' -recrypt -decrypt-force");
+   "-redact-shape", ("", "-redact-shape '100 100 200 300' -outline -recrypt -decrypt-force");
+   "-redact-apply", ("", "-redact-apply -recrypt -decrypt-force");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
