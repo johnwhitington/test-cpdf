@@ -1,4 +1,4 @@
-e* A very simple tester for cpdf. *)
+(* A very simple tester for cpdf. *)
 open Pdfutil
 
 let loud = true
@@ -133,6 +133,7 @@ let tests =
    "-decompress-with-jbig2",
     ("-decompress -jbig2dec jbig2dec", "");
    "-squeeze", ("-squeeze", "");
+
    "-squeeze-log-to", ("-squeeze -squeeze-log-to PDFResults/squeeze_log.txt", "");
    (* Chapter 6: Bookmarks *)
    "-list-bookmarks",
@@ -381,11 +382,12 @@ let tests =
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    "-test-extract-text", ("", "-test-extract-text");
    "-remove-stream-content", ("", "-remove-stream-content -no-preserve-objstm");
-   "-redact-shape", ("", "-redact-shape '100 100 200 300' -outline -recrypt -decrypt-force");
+   "-redact-shape", ("", "-redact-shape '100 100 300 1000' -outline -recrypt -decrypt-force");
    "-redact-apply", ("", "-redact-apply -recrypt -decrypt-force");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
+   "-squeeze-recompress", ("-squeeze -squeeze-reprocess", "");
    ]
 
 let recrypt_allowed = function
