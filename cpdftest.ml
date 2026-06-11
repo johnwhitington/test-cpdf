@@ -387,7 +387,7 @@ let tests =
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
-   "-squeeze-recompress", ("-squeeze -squeeze-reprocess", "");
+   "-squeeze-reprocess", ("-squeeze -squeeze-reprocess", "");
    ]
 
 let recrypt_allowed = function
