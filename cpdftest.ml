@@ -383,6 +383,7 @@ let tests =
    "-test-extract-text", ("", "-test-extract-text");
    "-remove-stream-content", ("", "-remove-stream-content -no-preserve-objstm");
    "-redact-shape", ("", "-redact-shape '100 100 300 1000' -outline -recrypt -decrypt-force");
+   "-redact-whole-page", ("", "-redact-shape 'CMINX CMINY CW CH' -outline -recrypt -decrypt-force");
    "-redact-apply", ("", "-redact-apply -recrypt -decrypt-force");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
