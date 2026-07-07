@@ -382,7 +382,13 @@ let tests =
    "-reveal-text-blacktext", ("", "-reveal-text AND -blacktext");
    "-test-extract-text", ("", "-test-extract-text");
    "-remove-stream-content", ("", "-remove-stream-content -no-preserve-objstm");
-   "-redact-shape", ("", "-redact-shape '100 100 200 300' -redact-annotations -progress -color lightgreen -redact-no-show -recrypt -decrypt-force");
+   "-redact-shape", ("", "-redact-shape '100 100 200 300' -progress -outline -recrypt -decrypt-force");
+   "-redact-shape-no-images", ("", "-redact-shape '100 100 200 300' -redact-text leave -redact-images remove,touches -redact-inline-images remove,touches -progress -outline -recrypt -decrypt-force");
+   "-redact-shape-chop-images", ("", "-redact-shape '100 100 200 300' -redact-text leave -redact-images chop,touches -redact-inline-images remove,touches -progress -outline -recrypt -decrypt-force");
+   "-redact-shape-no-vectors", ("", "-redact-shape '100 100 200 300' -redact-text leave -redact-vectors remove,touches -progress -outline -recrypt -decrypt-force");
+   "-redact-shape-enclosing", ("", "-redact-shape '100 100 200 300' -redact-text remove,encloses -progress -outline -recrypt -decrypt-force");
+   "-redact-shape-invert", ("", "-redact-shape '100 100 200 300' -redact-invert -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -progress -outline -recrypt -decrypt-force");
+   "-redact-shape-blank", ("", "-redact-shape '100 100 200 300' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -progress -outline -recrypt -decrypt-force");
    "-redact-shape-info", ("", "-redact-shape '100 100 200 300' -process-images-info -outline -recrypt -decrypt-force");
    "-redact-whole-page", ("", "-redact-shape 'CMINX CMINY CW CH' -outline -recrypt -decrypt-force");
    "-redact-apply", ("", "-redact-apply -recrypt -decrypt-force");
