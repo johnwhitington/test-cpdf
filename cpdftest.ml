@@ -189,7 +189,7 @@ let tests =
    "-pad-with", ("-pad-every 2 -pad-with hello.pdf", "");
    "-pad-multiple", ("-pad-multiple 8", "");
    "-pad-multiple-before", ("-pad-multiple-before 8", "");
-   "-redact", ("-redact -process-struct-trees", "1");
+
    (* Chapter 10: Annotations *)
    "-list-annotations",
     ("-list-annotations", "");
@@ -388,11 +388,11 @@ let tests =
    "-redact-shape-no-vectors", ("", "-redact-shape '100 100 200 300' -redact-text leave -redact-vectors remove,touches -progress -outline -recrypt -decrypt-force");
    "-redact-shape-enclosing", ("", "-redact-shape '100 100 200 300' -redact-text remove,encloses -progress -outline -recrypt -decrypt-force");
    "-redact-shape-invert", ("", "-redact-shape '100 100 200 300' -redact-invert -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -progress -outline -recrypt -decrypt-force");
-   "-redact-shape-blank", ("", "-redact-shape '100 100 200 300' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -progress -outline -recrypt -decrypt-force");
-   "-redact-shape-info", ("", "-redact-shape '100 100 200 300' -process-images-info -outline -recrypt -decrypt-force");
-   "-redact-whole-page", ("", "-redact-shape 'CMINX CMINY CW CH' -outline -recrypt -decrypt-force");
+   "-redact-shape-blank", ("", "-redact-shape '200 300 300 200' -redact-vectors remove,touches -redact-images chop,touches -redact-inline-images remove,touches -redact-annotations remove,touches -progress -outline -recrypt -process-images-info -decrypt-force");
+   "-redact-whole-page", ("", "-redact-shape 'CMINX CMINY CW CH' -redact-vectors remove,touches -redact-images chop,touches -redact-inline-images remove,touches -redact-annotations remove,touches -outline -recrypt -decrypt-force");
    "-redact-apply", ("", "-redact-apply -recrypt -decrypt-force");
    "-redact-apply-type", ("", "-redact-apply-type /Square-recrypt -decrypt-force");
+   "-redact", ("-redact -process-struct-trees", "1");
    (* Specials, for internal testing *)
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
