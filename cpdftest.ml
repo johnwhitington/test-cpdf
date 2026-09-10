@@ -390,7 +390,8 @@ let tests =
    "-redact-shape-invert", ("", "-redact-shape '100 100 200 300' -redact-invert -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -progress -outline -recrypt -decrypt-force");
    "-redact-shape-blank", ("", "-redact-shape '100 100 200 300' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -progress -outline -recrypt -process-images-info -decrypt-force");
    "-redact-whole-page", ("", "-redact-shape 'CMINX CMINY CW CH' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -outline -recrypt -decrypt-force");
-   "-redact-inspection", ("", "-redact-shape 'CMINX CMINY CW CH' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -outline -recrypt -decrypt-force AND -decompress -no-preserve-objstm");
+   "-redact-inspect", ("", "-redact-shape '-1000000 -1000000 2000000 20000000' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -outline -recrypt -decrypt-force AND -decompress -no-preserve-objstm");
+   "-redact-inspect-show", ("", "-extract-stream 'P1/Contents/[0]' -stdout");
    "-redact-apply", ("", "-redact-apply -recrypt -decrypt-force");
    "-redact-apply-type", ("", "-redact-apply-type /Square-recrypt -decrypt-force");
    "-redact", ("-redact -process-struct-trees", "1");
