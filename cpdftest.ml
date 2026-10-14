@@ -388,7 +388,7 @@ let tests =
    "-redact-shape-no-vectors", ("", "-redact-shape '100 100 200 300' -redact-text leave -redact-vectors remove,touches -progress -outline -recrypt -decrypt-force");
    "-redact-shape-enclosing", ("", "-redact-shape '100 100 200 300' -redact-text remove,encloses -progress -outline -recrypt -decrypt-force");
    "-redact-shape-invert", ("", "-redact-shape '100 100 200 300' -redact-invert -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -progress -outline -recrypt -decrypt-force");
-   "-redact-shape-blank", ("", "-redact-shape '100 100 200 300' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -progress -outline -recrypt -process-images-info -decrypt-force");
+   "-redact-shape-blank", ("", "-redact-shape '100 100 200 300' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -redact-structure remove,containing -progress -outline -recrypt -process-images-info -decrypt-force");
    "-redact-whole-page", ("", "-redact-shape 'CMINX CMINY CW CH' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -outline -recrypt -decrypt-force");
    "-redact-inspect", ("", "-redact-shape '-1000000 -1000000 2000000 20000000' -redact-vectors remove,touches -redact-images remove,touches -redact-inline-images remove,touches -redact-annotations remove,touches -outline -recrypt -decrypt-force AND -decompress -no-preserve-objstm");
    "-redact-inspect-show", ("", "-decompress AND -extract-stream 'P1/Contents/[0]' -stdout");
@@ -399,6 +399,7 @@ let tests =
    "-dup", ("", "5DUP");
    "-page-content", ("-page-content", "1");
    "-squeeze-reprocess", ("-squeeze -squeeze-reprocess", "");
+   "-mcids", ("-redact-shape '100 100 200 300' -outline -redact-structure remove,all", "");
    ]
 
 let recrypt_allowed = function
